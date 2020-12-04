@@ -21,10 +21,6 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-# For Debugging
-from IPython import embed
-from IPython.terminal.embed import InteractiveShellEmbed
-
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 # Target
