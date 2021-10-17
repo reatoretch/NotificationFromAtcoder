@@ -13,4 +13,5 @@ python notification.py
 
 すでに公式のサンプルなどを実行して`token.pickle`が生成されている場合は削除してから実行して下さい。
 
-同じ名前の予定がある場合は更新しないので適宜プログラムを修正してください。
+Windowsで起動時に自動実行したい場合は以下のissueを参考にしてください  
+[[#1] Windows上で起動するたびに実行](https://github.com/reatoretch/NotificationFromAtcoder/issues/1)
