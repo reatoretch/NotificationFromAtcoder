@@ -1,5 +1,6 @@
 # For Google Calendar API
 from __future__ import print_function
+import pybase64
 import datetime
 import pickle
 import os.path
@@ -43,6 +44,20 @@ def make_bs_obj(url):
     logger.debug(f"access {url} ...")
 
     return BeautifulSoup(html.content,'html.parser')
+
+# ref:https://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
+def decode_base64(data, altchars=b'+/'):
+    """Decode base64, padding being optional.
+
+    :param data: Base64 data as an ASCII byte string
+    :returns: The decoded byte string.
+
+    """
+    data = re.sub(rb'[^a-zA-Z0-9%s]+' % altchars, b'', data)  # normalize
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += b'='* (4 - missing_padding)
+    return pybase64.b64decode(data, altchars)
 
 # ref: https://developers.google.com/calendar/quickstart/python
 def create_schedule(title,start,end):
@@ -93,20 +108,22 @@ def create_schedule(title,start,end):
         event = service.events().insert(calendarId='primary', body=schedule).execute()
         return
 
+    string = '[NEW]'
     for event in events:
         if event['summary'] == title:
-            logger.debug(f"already event name '{title}' exist\n")
-            return
+            b64_ids = event['htmlLink'].split('?eid=')[1]
+            e_id,c_id = map(lambda x:str(x)[2:-1],decode_base64(b64_ids.encode()).split())
+            service.events().delete(calendarId='primary', eventId=e_id).execute()
+            string = "[REMAKE]"
     
     event = service.events().insert(calendarId='primary', body=schedule).execute()
-    logger.debug(f"[NEW] add event '{title}'\n")
+    logger.debug(f"{string} add event '{title}'\n")
 
 def main():
     bs_obj = make_bs_obj(TARGET_URL)
     next_contest_list = [TARGET_URL + a_bs_obj.find('a').attrs['href'] for a_bs_obj in bs_obj.select('#main-container > section:nth-child(2) > div.f-flex.f-flex_mg5.f-flex_mg0_s.f-flex_mb5_s > div:nth-child(1) > div > ul > li > div.m-list_contest_ttl')]
 
-    for i in range(len(next_contest_list)):
-        url = next_contest_list[i]
+    for url in next_contest_list:
         bs_obj = make_bs_obj(url + QUERY_PARAM)
         
         pattern = re.compile(r"var.*Time = .")
