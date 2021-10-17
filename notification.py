@@ -115,6 +115,7 @@ def create_schedule(title,start,end):
             e_id,c_id = map(lambda x:str(x)[2:-1],decode_base64(b64_ids.encode()).split())
             service.events().delete(calendarId='primary', eventId=e_id).execute()
             string = "[REMAKE]"
+            break
     
     event = service.events().insert(calendarId='primary', body=schedule).execute()
     logger.debug(f"{string} add event '{title}'\n")
